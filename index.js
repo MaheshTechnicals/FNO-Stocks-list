@@ -41,20 +41,23 @@ async function fetchSymbols() {
 
     // Sort alphabetically by symbol
     const sorted = data.sort((a, b) => a.symbol.localeCompare(b.symbol));
+    const count = sorted.length;
 
-    // CSV output
+    // CSV filename with count
+    const csvFileName = `derivatives_symbols(${count}).csv`;
     const csvRecords = sorted.map(item => ({ symbol: item.symbol }));
     const csvWriter = createObjectCsvWriter({
-      path: 'derivatives_symbols.csv',
+      path: csvFileName,
       header: [{ id: 'symbol', title: 'Symbol' }],
     });
     await csvWriter.writeRecords(csvRecords);
-    console.log(`✅ CSV file saved: derivatives_symbols.csv (${csvRecords.length} symbols)`);
+    console.log(`✅ CSV file saved: ${csvFileName} (${count} symbols)`);
 
-    // TradingView list
+    // TradingView filename with count
+    const txtFileName = `tradingview_symbols(${count}).txt`;
     const tradingViewSymbols = sorted.map(item => `NSE:${item.symbol}`);
-    fs.writeFileSync('tradingview_symbols.txt', tradingViewSymbols.join('\n'));
-    console.log(`✅ TradingView list saved: tradingview_symbols.txt`);
+    fs.writeFileSync(txtFileName, tradingViewSymbols.join('\n'));
+    console.log(`✅ TradingView list saved: ${txtFileName}`);
 
   } catch (err) {
     console.error('❌ Error fetching data:', err.message);
