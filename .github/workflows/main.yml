@@ -22,6 +22,7 @@ jobs:
         run: npm install
 
       - name: Run NSE fetch script
+        id: fetch
         run: node index.js
 
       - name: Delete old release and tag
@@ -30,6 +31,7 @@ jobs:
         run: |
           RELEASE_ID=$(gh release view latest --json id --jq '.id' 2>/dev/null || echo "")
           if [ ! -z "$RELEASE_ID" ]; then
+            echo "Deleting old release $RELEASE_ID..."
             gh release delete latest --yes
           fi
           if git rev-parse refs/tags/latest >/dev/null 2>&1; then
@@ -41,8 +43,6 @@ jobs:
         with:
           tag_name: latest
           name: NSE Symbols Latest
-          files: |
-            ./derivatives_symbols.csv
-            ./tradingview_symbols.txt
+          files: ${{ steps.fetch.outputs.csv_file }},${{ steps.fetch.outputs.txt_file }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
