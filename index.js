@@ -1,5 +1,6 @@
 const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
 const { createObjectCsvWriter } = require('csv-writer');
 
 async function fetchSymbols() {
@@ -41,21 +42,30 @@ async function fetchSymbols() {
 
     // Sort alphabetically by symbol
     const sorted = data.sort((a, b) => a.symbol.localeCompare(b.symbol));
-    const count = sorted.length;
 
-    // CSV filename with count
-    const csvFileName = `derivatives_symbols(${count}).csv`;
-    const csvRecords = sorted.map(item => ({ symbol: item.symbol }));
+    // Filenames (fixed for release)
+    const csvFileName = path.join(process.cwd(), 'derivatives_symbols.csv');
+    const txtFileName = path.join(process.cwd(), 'tradingview_symbols.txt');
+
+    // CSV with Sr. No.
+    const csvRecords = sorted.map((item, index) => ({
+      SrNo: index + 1,
+      symbol: item.symbol,
+    }));
+
     const csvWriter = createObjectCsvWriter({
       path: csvFileName,
-      header: [{ id: 'symbol', title: 'Symbol' }],
+      header: [
+        { id: 'SrNo', title: 'Sr. No.' },
+        { id: 'symbol', title: 'Symbol' },
+      ],
     });
-    await csvWriter.writeRecords(csvRecords);
-    console.log(`✅ CSV file saved: ${csvFileName} (${count} symbols)`);
 
-    // TradingView filename with count
-    const txtFileName = `tradingview_symbols(${count}).txt`;
-    const tradingViewSymbols = sorted.map(item => `NSE:${item.symbol}`);
+    await csvWriter.writeRecords(csvRecords);
+    console.log(`✅ CSV file saved: ${csvFileName} (${sorted.length} symbols)`);
+
+    // TradingView TXT with Sr. No.
+    const tradingViewSymbols = sorted.map((item, index) => `${index + 1}. NSE:${item.symbol}`);
     fs.writeFileSync(txtFileName, tradingViewSymbols.join('\n'));
     console.log(`✅ TradingView list saved: ${txtFileName}`);
 
