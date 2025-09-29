@@ -1,0 +1,52 @@
+name: NSE Symbols Release
+
+on:
+  workflow_dispatch:        # Manual trigger
+  schedule:
+    - cron: '0 0 1 * *'     # Runs on 1st day of every month at 00:00 UTC
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1️⃣ Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2️⃣ Set up Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    # 3️⃣ Install dependencies
+    - name: Install dependencies
+      run: npm install
+
+    # 4️⃣ Run NSE fetch script
+    - name: Run NSE fetch script
+      run: node index.js
+
+    # 5️⃣ Create or get the latest release
+    - name: Create or get latest release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: latest
+        release_name: NSE Symbols Latest
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # 6️⃣ Upload CSV and TXT to release
+    - name: Upload CSV and TXT to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: latest
+        files: |
+          derivatives_symbols.csv
+          tradingview_symbols.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
