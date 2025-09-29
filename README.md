@@ -55,7 +55,7 @@ F-O-Stocks-list/
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/MaheshTechnicals/F-O-Stocks-list.git
+git clone https://github.com/MaheshTechnicals/FNO-Stocks-list.git
 cd F-O-Stocks-list
 ```
 
