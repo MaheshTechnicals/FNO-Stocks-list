@@ -16,7 +16,7 @@ async function fetchSymbols() {
   };
 
   try {
-    // Get NSE session cookies
+    // Step 1: Get NSE session cookies
     const pageResp = await axios.get(pageUrl, { headers });
     const cookies = pageResp.headers['set-cookie']?.map(c => c.split(';')[0]).join('; ');
 
@@ -25,7 +25,7 @@ async function fetchSymbols() {
       return;
     }
 
-    // Request API with cookies
+    // Step 2: Request API with cookies
     const apiResp = await axios.get(apiUrl, {
       headers: {
         ...headers,
@@ -43,7 +43,7 @@ async function fetchSymbols() {
     const sorted = data.sort((a, b) => a.symbol.localeCompare(b.symbol));
     const count = sorted.length;
 
-    // CSV and TXT filenames with count
+    // Filenames with count
     const csvFileName = path.join(process.cwd(), `derivatives_symbols(${count}).csv`);
     const txtFileName = path.join(process.cwd(), `tradingview_symbols(${count}).txt`);
 
@@ -68,9 +68,12 @@ async function fetchSymbols() {
     fs.writeFileSync(txtFileName, tradingViewSymbols.join('\n'));
     console.log(`✅ TradingView list saved: ${txtFileName}`);
 
-    // Output filenames for GitHub Actions
-    console.log(`::set-output name=csv_file::${csvFileName}`);
-    console.log(`::set-output name=txt_file::${txtFileName}`);
+    // ✅ Set GitHub Actions outputs using environment files
+    const githubOutputPath = process.env.GITHUB_OUTPUT;
+    if (githubOutputPath) {
+      fs.appendFileSync(githubOutputPath, `csv_file=${csvFileName}\n`);
+      fs.appendFileSync(githubOutputPath, `txt_file=${txtFileName}\n`);
+    }
 
   } catch (err) {
     console.error('❌ Error fetching data:', err.message);
