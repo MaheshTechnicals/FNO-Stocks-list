@@ -1,0 +1,24 @@
+# Node.js dependencies
+node_modules/
+package-lock.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# GitHub Actions local files (if any)
+.github/workflows/*.local
+
+# CSV and TXT outputs
+derivatives_symbols.csv
+tradingview_symbols.txt
+
+# Optional: local environment files
+.env
