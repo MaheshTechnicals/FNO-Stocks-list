@@ -1,59 +1,48 @@
 name: NSE Symbols Release
 
 on:
-  workflow_dispatch:        # Manual trigger
+  workflow_dispatch:
   schedule:
-    - cron: '0 0 1 * *'     # 1st day of every month at 00:00 UTC
+    - cron: '0 0 1 * *'
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
-      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # 4️⃣ Run NSE fetch script
       - name: Run NSE fetch script
         run: node index.js
 
-      # 5️⃣ Delete old release & tag if exists
       - name: Delete old release and tag
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          # Check if release exists
           RELEASE_ID=$(gh release view latest --json id --jq '.id' 2>/dev/null || echo "")
           if [ ! -z "$RELEASE_ID" ]; then
-            echo "Deleting old release $RELEASE_ID..."
             gh release delete latest --yes
           fi
-
-          # Delete old tag if exists
           if git rev-parse refs/tags/latest >/dev/null 2>&1; then
-            echo "Deleting old tag 'latest'..."
             git push origin --delete refs/tags/latest
           fi
 
-      # 6️⃣ Create new release and upload assets
       - name: Create new release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
           name: NSE Symbols Latest
           files: |
-            derivatives_symbols.csv
-            tradingview_symbols.txt
+            ./derivatives_symbols.csv
+            ./tradingview_symbols.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
