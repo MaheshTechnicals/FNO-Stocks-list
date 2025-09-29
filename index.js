@@ -16,7 +16,7 @@ async function fetchSymbols() {
   };
 
   try {
-    // Step 1: Get NSE session cookies
+    // Get NSE session cookies
     const pageResp = await axios.get(pageUrl, { headers });
     const cookies = pageResp.headers['set-cookie']?.map(c => c.split(';')[0]).join('; ');
 
@@ -25,7 +25,7 @@ async function fetchSymbols() {
       return;
     }
 
-    // Step 2: Request API with cookies
+    // Request API with cookies
     const apiResp = await axios.get(apiUrl, {
       headers: {
         ...headers,
@@ -40,12 +40,12 @@ async function fetchSymbols() {
       return;
     }
 
-    // Sort alphabetically by symbol
     const sorted = data.sort((a, b) => a.symbol.localeCompare(b.symbol));
+    const count = sorted.length;
 
-    // Filenames (fixed for release)
-    const csvFileName = path.join(process.cwd(), 'derivatives_symbols.csv');
-    const txtFileName = path.join(process.cwd(), 'tradingview_symbols.txt');
+    // CSV and TXT filenames with count
+    const csvFileName = path.join(process.cwd(), `derivatives_symbols(${count}).csv`);
+    const txtFileName = path.join(process.cwd(), `tradingview_symbols(${count}).txt`);
 
     // CSV with Sr. No.
     const csvRecords = sorted.map((item, index) => ({
@@ -60,14 +60,17 @@ async function fetchSymbols() {
         { id: 'symbol', title: 'Symbol' },
       ],
     });
-
     await csvWriter.writeRecords(csvRecords);
-    console.log(`✅ CSV file saved: ${csvFileName} (${sorted.length} symbols)`);
+    console.log(`✅ CSV file saved: ${csvFileName}`);
 
-    // TradingView TXT with Sr. No.
+    // TXT with Sr. No.
     const tradingViewSymbols = sorted.map((item, index) => `${index + 1}. NSE:${item.symbol}`);
     fs.writeFileSync(txtFileName, tradingViewSymbols.join('\n'));
     console.log(`✅ TradingView list saved: ${txtFileName}`);
+
+    // Output filenames for GitHub Actions
+    console.log(`::set-output name=csv_file::${csvFileName}`);
+    console.log(`::set-output name=txt_file::${txtFileName}`);
 
   } catch (err) {
     console.error('❌ Error fetching data:', err.message);
