@@ -97,7 +97,7 @@ on:
 
 ## 📝 Output Files
 
-### CSV Example (`derivatives_symbols(209).csv`)
+### CSV Example (`derivatives_symbols({count}).csv`)
 
 | Sr. No. | Symbol  |
 |---------|---------|
@@ -106,12 +106,12 @@ on:
 | 3       | APLAPOLLO |
 | ...     | ...     |
 
-### TradingView TXT Example (`tradingview_symbols(209).txt`)
+### TradingView TXT Example (`tradingview_symbols({count}).txt`)
 
 ```
-1. NSE:360ONE
-2. NSE:ABB
-3. NSE:APLAPOLLO
+NSE:360ONE
+NSE:ABB
+NSE:APLAPOLLO
 ...
 ```
 
