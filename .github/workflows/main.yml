@@ -3,7 +3,8 @@ name: NSE Symbols Release
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 1 * *'
+    # Run at 08:00 AM IST on 1st day of every month (02:30 AM UTC)
+    - cron: '30 2 1 * *'
 
 jobs:
   build-and-release:
