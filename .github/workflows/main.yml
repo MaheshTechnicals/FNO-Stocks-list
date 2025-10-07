@@ -1,29 +1,58 @@
 name: NSE Symbols Release
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual trigger from GitHub Actions UI
   schedule:
-    - cron: '30 2 1 * *'  # 8:00 AM IST on 1st day of every month
+    # Run at 08:00 AM IST (02:30 AM UTC) on the 1st day of every month
+    - cron: '30 2 1 * *'
 
 permissions:
-  contents: write
+  contents: write  # Required to delete and create releases
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Setup Node.js environment
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
+      # Step 3: Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # Step 4: Run your custom NSE fetch script
       - name: Run NSE fetch script
         id: fetch
         run: node index.js
+
+      # Step 5: Delete old release and tag if they exist
+      - name: Delete old release and tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          RELEASE_ID=$(gh release view latest --json id --jq '.id' 2>/dev/null || echo "")
+          if [ ! -z "$RELEASE_ID" ]; then
+            echo "Deleting old release $RELEASE_ID..."
+            gh release delete latest --yes
+          fi
+          if git rev-parse refs/tags/latest >/dev/null 2>&1; then
+            git push origin --delete refs/tags/latest
+          fi
+
+      # Step 6: Create a new release with generated files
+      - name: Create new release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: NSE Symbols Latest
+          files: ${{ steps.fetch.outputs.csv_file }},${{ steps.fetch.outputs.txt_file }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
