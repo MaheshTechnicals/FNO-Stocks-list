@@ -1,10 +1,9 @@
 name: NSE Symbols Release
 
 on:
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
   schedule:
-    # Run at 8:00 AM IST (2:30 AM UTC) on the 1st day of every month
-    - cron: '30 2 1 * *'
+    - cron: '30 2 1 * *'  # 8:00 AM IST on 1st day of every month
 
 permissions:
   contents: write
@@ -23,30 +22,8 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run NSE fetch script
         id: fetch
         run: node index.js
-
-      - name: Delete old release and tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          RELEASE_ID=$(gh release view latest --json id --jq '.id' 2>/dev/null || echo "")
-          if [ ! -z "$RELEASE_ID" ]; then
-            echo "Deleting old release $RELEASE_ID..."
-            gh release delete latest --yes
-          fi
-          if git rev-parse refs/tags/latest >/dev/null 2>&1; then
-            git push origin --delete refs/tags/latest
-          fi
-
-      - name: Create new release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: latest
-          name: NSE Symbols Latest
-          files: ${{ steps.fetch.outputs.csv_file }},${{ steps.fetch.outputs.txt_file }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
