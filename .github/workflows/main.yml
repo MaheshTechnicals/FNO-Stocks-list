@@ -1,10 +1,13 @@
 name: NSE Symbols Release
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual trigger
   schedule:
-    # Run at 08:00 AM IST on 1st day of every month (02:30 AM UTC)
+    # Run at 8:00 AM IST (2:30 AM UTC) on the 1st day of every month
     - cron: '30 2 1 * *'
+
+permissions:
+  contents: write
 
 jobs:
   build-and-release:
@@ -20,7 +23,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run NSE fetch script
         id: fetch
